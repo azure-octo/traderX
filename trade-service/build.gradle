@@ -28,6 +28,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.h2database:h2:2.2.224'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+	implementation 'com.microsoft.sqlserver:mssql-jdbc:12.7.1.jre11-preview'
+
 
 	implementation('org.json:json:20240303') {
 		because 'previous versions are affected by multiple CVE'

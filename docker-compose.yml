@@ -1,29 +1,22 @@
-version: '3.4'
-
+version: '3.9'
 services:
-  database:
+  database-sqlserver:
     restart: always
     environment:
-      - DATABASE_WEB_HOSTNAMES=${TRADERX_FQDN:-localhost}
-    image: database
+    - ACCEPT_EULA=Y
+    - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    image: database-sqlserver
     build:
-      context: database
+      context: database-sqlserver
       dockerfile: Dockerfile
-    working_dir: /database
+    working_dir: /database-sqlserver
     expose:
-      - 18082
-      - 18083
-      - 18084
+      - 1443
     ports:
-      - 18082:18082
-      - 18083:18083
-      - 18084:18084
-    volumes:
-      # Mount the root folder that contains .git
-      - .:/workspace:cached
-    command: ./run.sh
-    networks:
-      - localnet
+      - 1443:1443
+    mem_reservation: 1024M
+    mem_limit: 2048M
+    cpus: 1.0
   reference-data:
     restart: always
     image: reference-data
@@ -87,7 +80,11 @@ services:
     ports:
       - 18088:18088
     environment:
-      - DATABASE_TCP_HOST=database
+      - DATABASE_DRIVER=com.microsoft.sqlserver.jdbc.SQLServerDriver
+      - DATABASE_DIALECT=org.hibernate.dialect.SQLServerDialect
+      - DATABASE_URL=jdbc:sqlserver://database-sqlserver:1433;databaseName=traderx;encrypt=true;trustServerCertificate=true;
+      - DATABASE_DBUSER=sa
+      - DATABASE_DBPASS=YourStrong@Passw0rd
       - PEOPLE_SERVICE_HOST=people-service
     volumes:
       # Mount the root folder that contains .git
@@ -96,7 +93,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - database-sqlserver
       - people-service
   position-service:
     restart: always
@@ -110,7 +107,12 @@ services:
     ports:
       - 18090:18090
     environment:
-      - DATABASE_TCP_HOST=database
+      - DATABASE_DRIVER=com.microsoft.sqlserver.jdbc.SQLServerDriver
+      - DATABASE_DIALECT=org.hibernate.dialect.SQLServerDialect
+      - DATABASE_URL=jdbc:sqlserver://database-sqlserver:1433;databaseName=traderx;encrypt=true;trustServerCertificate=true;
+      - DATABASE_DBUSER=sa
+      - DATABASE_DBPASS=YourStrong@Passw0rd
+      - PEOPLE_SERVICE_HOST=people-service
     volumes:
       # Mount the root folder that contains .git
       - .:/workspace:cached
@@ -118,7 +120,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - database-sqlserver
   trade-service:
     restart: always
     image: trade-service
@@ -131,7 +133,7 @@ services:
     ports:
       - 18092:18092
     environment:
-      - DATABASE_TCP_HOST=database
+      - PEOPLE_SERVICE_HOST=people-service
       - PEOPLE_SERVICE_HOST=people-service
       - ACCOUNT_SERVICE_HOST=account-service
       - REFERENCE_DATA_HOST=reference-data
@@ -143,7 +145,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - database-sqlserver
       - people-service
       - account-service
       - reference-data
@@ -160,7 +162,11 @@ services:
     ports:
       - 18091:18091
     environment:
-      - DATABASE_TCP_HOST=database
+      - DATABASE_DRIVER=com.microsoft.sqlserver.jdbc.SQLServerDriver
+      - DATABASE_DIALECT=org.hibernate.dialect.SQLServerDialect
+      - DATABASE_URL=jdbc:sqlserver://database-sqlserver:1433;databaseName=traderx;encrypt=true;trustServerCertificate=true;
+      - DATABASE_DBUSER=sa
+      - DATABASE_DBPASS=YourStrong@Passw0rd
       - TRADE_FEED_HOST=trade-feed
     volumes:
       # Mount the root folder that contains .git
@@ -169,7 +175,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - database-sqlserver
       - trade-feed
   web-front-end-angular:
     restart: always
@@ -189,7 +195,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - database-sqlserver
       - trade-feed
   ingress:
     image: ingress
@@ -206,7 +212,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - database-sqlserver
       - trade-feed
       - people-service
       - account-service
