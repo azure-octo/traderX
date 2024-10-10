@@ -1,6 +1,28 @@
 {
 	"image": "mcr.microsoft.com/devcontainers/universal:2",
 	"features": {
-		"ghcr.io/devcontainers-contrib/features/gradle-sdkman:2": {}
-	}
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers-contrib/features/gradle-sdkman:2": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "version": "latest",
+            "moby": true,
+			"dockerDefaultAddressPool": "base=192.168.0.0/16,size=24"
+        },
+		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+			"minikube": "none"
+		},
+		"ghcr.io/mpriscella/features/kind:1": {},
+		"ghcr.io/dhoeric/features/stern:1": {}
+	},
+	"customizations": {
+        "vscode": {
+            "extensions": [
+                "redhat.vscode-yaml",
+                "ms-azuretools.vscode-bicep",
+                "ms-kubernetes-tools.vscode-kubernetes-tools",
+				"ms-mssql.mssql",
+				"vscjava.vscode-java-pack"
+            ]
+        }
+    },
 }
