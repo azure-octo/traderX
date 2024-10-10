@@ -3,21 +3,26 @@ extension radius
 // Parameters
 param application string
 
+// ghcr.io/finos/traderx
+param registry string = 'rynowak.azurecr.io/traderx'
+param tag string = 'latest'
+
+var password = 'StrongPassw0rd'
+
 resource database 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'database'
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/database:latest'
+      image: '${registry}/sql-database:${tag}'
+      env: {
+        MSSQL_SA_PASSWORD: {
+          value: password
+        }
+      }
       ports: {
-        tcp: {
-          containerPort: 18082
-        }
-        pg:{
-          containerPort: 18083
-        }
-        web: {
-          containerPort: 18084
+        sql: {
+          containerPort: 1433
         }
       }
     }
@@ -29,7 +34,7 @@ resource referencedata 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/reference-data:latest'
+      image: '${registry}/reference-data:${tag}'
       ports: {
         web: {
           containerPort: 18085
@@ -44,7 +49,7 @@ resource tradefeed 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/trade-feed:latest'
+      image: '${registry}/trade-feed:${tag}'
       ports: {
         web: {
           containerPort: 18086
@@ -59,7 +64,7 @@ resource peopleservice 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/people-service:latest'
+      image: '${registry}/people-service:${tag}'
       ports: {
         web: {
           containerPort: 18089
@@ -74,7 +79,7 @@ resource accountservice 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/account-service:latest'
+      image: '${registry}/account-service:${tag}'
       ports: {
         web: {
           containerPort: 18088
@@ -83,6 +88,21 @@ resource accountservice 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         DATABASE_TCP_HOST: {
           value: database.name
+        }
+        DATABASE_TCP_PORT: {
+          value: '1433'
+        }
+        DATABASE_NAME: {
+          value: 'master'
+        }
+        DATABASE_DBUSER: {
+          value: 'sa'
+        }
+        DATABASE_DBPASS: {
+          value: 'StrongPassw0rd'
+        }
+        DATABASE_DIALECT: { 
+          value: 'org.hibernate.dialect.SQLServerDialect'
         }
         PEOPLE_SERVICE_HOST: {
           value: peopleservice.name
@@ -105,7 +125,7 @@ resource positionservice 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/position-service:latest'
+      image: '${registry}/position-service:${tag}'
       ports: {
         web: {
           containerPort: 18090
@@ -114,6 +134,21 @@ resource positionservice 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         DATABASE_TCP_HOST: {
           value: database.name
+        }
+        DATABASE_TCP_PORT: {
+          value: '1433'
+        }
+        DATABASE_NAME: {
+          value: 'master'
+        }
+        DATABASE_DBUSER: {
+          value: 'sa'
+        }
+        DATABASE_DBPASS: {
+          value: 'StrongPassw0rd'
+        }
+        DATABASE_DIALECT: { 
+          value: 'org.hibernate.dialect.SQLServerDialect'
         }
       }
     }
@@ -130,7 +165,7 @@ resource tradeservice 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/trade-service:latest'
+      image: '${registry}/trade-service:${tag}'
       ports: {
         web: {
           containerPort: 18092
@@ -139,6 +174,21 @@ resource tradeservice 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         DATABASE_TCP_HOST: {
           value: database.name
+        }
+        DATABASE_TCP_PORT: {
+          value: '1433'
+        }
+        DATABASE_NAME: {
+          value: 'master'
+        }
+        DATABASE_DBUSER: {
+          value: 'sa'
+        }
+        DATABASE_DBPASS: {
+          value: 'StrongPassw0rd'
+        }
+        DATABASE_DIALECT: { 
+          value: 'org.hibernate.dialect.SQLServerDialect'
         }
         PEOPLE_SERVICE_HOST: {
           value: peopleservice.name
@@ -179,7 +229,7 @@ resource tradeprocessor 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/trade-processor:latest'
+      image: '${registry}/trade-processor:${tag}'
       ports: {
         web: {
           containerPort: 18091
@@ -188,6 +238,21 @@ resource tradeprocessor 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         DATABASE_TCP_HOST: {
           value: database.name
+        }
+        DATABASE_TCP_PORT: {
+          value: '1433'
+        }
+        DATABASE_NAME: {
+          value: 'master'
+        }
+        DATABASE_DBUSER: {
+          value: 'sa'
+        }
+        DATABASE_DBPASS: {
+          value: 'StrongPassw0rd'
+        }
+        DATABASE_DIALECT: { 
+          value: 'org.hibernate.dialect.SQLServerDialect'
         }
         TRADE_FEED_HOST: {
           value: tradefeed.name
@@ -210,7 +275,7 @@ resource webfrontend 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/web-front-end-angular:latest'
+      image: '${registry}/web-front-end-angular:${tag}'
       ports: {
         web: {
           containerPort: 18093
@@ -238,22 +303,14 @@ resource ingress 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/finos/traderx/ingress:latest'
+      image: '${registry}/ingress:${tag}'
       ports: {
         web: {
           containerPort: 8080
         }
       }
-      env: {
-        DATABASE_TCP_HOST: {
-          value: database.name
-        }
-      }
     }
     connections: {
-      db: {
-        source: database.id
-      }
       tradefeed: {
         source: tradefeed.id
       }
