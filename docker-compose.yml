@@ -1,27 +1,23 @@
-version: '3.4'
-
 services:
-  database:
+  # Connect with
+  #
+  # sqlcmd -C -S localhost -U sa -P StrongPassw0rd -d master
+  #
+  # OR
+  #
+  # Server=localhost; Database=master; User=sa; Password=StrongPassw0rd";
+  sql-database:
     restart: always
     environment:
-      - DATABASE_WEB_HOSTNAMES=${TRADERX_FQDN:-localhost}
-    image: database
+      - 'MSSQL_SA_PASSWORD=StrongPassw0rd'
+    image: sql-database
     build:
-      context: database
+      context: sql-database
       dockerfile: Dockerfile
-    working_dir: /database
     expose:
-      - 18082
-      - 18083
-      - 18084
+      - 1433
     ports:
-      - 18082:18082
-      - 18083:18083
-      - 18084:18084
-    volumes:
-      # Mount the root folder that contains .git
-      - .:/workspace:cached
-    command: ./run.sh
+      - 1433:1433
     networks:
       - localnet
   reference-data:
@@ -87,7 +83,12 @@ services:
     ports:
       - 18088:18088
     environment:
-      - DATABASE_TCP_HOST=database
+      - DATABASE_TCP_HOST=sql-database
+      - DATABASE_TCP_PORT=1433
+      - DATABASE_NAME=master
+      - DATABASE_DBUSER=sa
+      - DATABASE_DBPASS=StrongPassw0rd
+      - DATABASE_DIALECT=org.hibernate.dialect.SQLServerDialect
       - PEOPLE_SERVICE_HOST=people-service
     volumes:
       # Mount the root folder that contains .git
@@ -96,7 +97,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - sql-database
       - people-service
   position-service:
     restart: always
@@ -110,7 +111,12 @@ services:
     ports:
       - 18090:18090
     environment:
-      - DATABASE_TCP_HOST=database
+      - DATABASE_TCP_HOST=sql-database
+      - DATABASE_TCP_PORT=1433
+      - DATABASE_NAME=master
+      - DATABASE_DBUSER=sa
+      - DATABASE_DBPASS=StrongPassw0rd
+      - DATABASE_DIALECT=org.hibernate.dialect.SQLServerDialect
     volumes:
       # Mount the root folder that contains .git
       - .:/workspace:cached
@@ -118,7 +124,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - sql-database
   trade-service:
     restart: always
     image: trade-service
@@ -131,7 +137,6 @@ services:
     ports:
       - 18092:18092
     environment:
-      - DATABASE_TCP_HOST=database
       - PEOPLE_SERVICE_HOST=people-service
       - ACCOUNT_SERVICE_HOST=account-service
       - REFERENCE_DATA_HOST=reference-data
@@ -143,7 +148,6 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
       - people-service
       - account-service
       - reference-data
@@ -160,7 +164,12 @@ services:
     ports:
       - 18091:18091
     environment:
-      - DATABASE_TCP_HOST=database
+      - DATABASE_TCP_HOST=sql-database
+      - DATABASE_TCP_PORT=1433
+      - DATABASE_NAME=master
+      - DATABASE_DBUSER=sa
+      - DATABASE_DBPASS=StrongPassw0rd
+      - DATABASE_DIALECT=org.hibernate.dialect.SQLServerDialect
       - TRADE_FEED_HOST=trade-feed
     volumes:
       # Mount the root folder that contains .git
@@ -169,7 +178,7 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
+      - sql-database
       - trade-feed
   web-front-end-angular:
     restart: always
@@ -189,7 +198,6 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
       - trade-feed
   ingress:
     image: ingress
@@ -206,7 +214,6 @@ services:
     networks:
       - localnet
     depends_on:
-      - database
       - trade-feed
       - people-service
       - account-service
