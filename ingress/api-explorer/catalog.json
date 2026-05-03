@@ -1,6 +1,6 @@
 {
-  "generatedAtUtc": "2026-05-03T17:20:04.543Z",
-  "stateId": "005-postgres-database-replacement",
+  "generatedAtUtc": "2026-05-03T17:23:07.257Z",
+  "stateId": "006-messaging-nats-replacement",
   "mountPath": "/api/docs",
   "services": [
     {
@@ -58,5 +58,48 @@
       "interactive": true
     }
   ],
-  "messagingSubjects": []
+  "messagingSubjects": [
+    {
+      "subject": "trades.new",
+      "pattern": "trades.new",
+      "wildcard": false,
+      "parameterized": false,
+      "prefillPattern": "trades.new"
+    },
+    {
+      "subject": "trades.processed",
+      "pattern": "trades.processed",
+      "wildcard": false,
+      "parameterized": false,
+      "prefillPattern": "trades.processed"
+    },
+    {
+      "subject": "trades.account.<accountId>.updated",
+      "pattern": "trades.account.<accountId>.updated",
+      "wildcard": false,
+      "parameterized": true,
+      "prefillPattern": "trades.account.{accountId}.updated"
+    },
+    {
+      "subject": "positions.account.<accountId>.updated",
+      "pattern": "positions.account.<accountId>.updated",
+      "wildcard": false,
+      "parameterized": true,
+      "prefillPattern": "positions.account.{accountId}.updated"
+    },
+    {
+      "subject": "trades.account.<accountId>.*",
+      "pattern": "trades.account.<accountId>.*",
+      "wildcard": false,
+      "parameterized": true,
+      "prefillPattern": "trades.account.{accountId}.*"
+    },
+    {
+      "subject": "positions.account.<accountId>.*",
+      "pattern": "positions.account.<accountId>.*",
+      "wildcard": false,
+      "parameterized": true,
+      "prefillPattern": "positions.account.{accountId}.*"
+    }
+  ]
 }
