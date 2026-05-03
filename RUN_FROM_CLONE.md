@@ -10,8 +10,8 @@ Prerequisites:
 Start:
 
 ```bash
-CORS_ALLOWED_ORIGINS=http://localhost:18093 ./scripts/start-state-002-edge-proxy-generated.sh --build-only
-CORS_ALLOWED_ORIGINS=http://localhost:18093 ./scripts/start-state-002-edge-proxy-generated.sh
+CORS_ALLOWED_ORIGINS=http://localhost:18093 ./scripts/start-state-003-agentic-harness-foundation-generated.sh --build-only
+CORS_ALLOWED_ORIGINS=http://localhost:18093 ./scripts/start-state-003-agentic-harness-foundation-generated.sh
 ```
 
 Endpoints:
@@ -20,11 +20,16 @@ Endpoints:
 - Angular direct dev server: `http://localhost:18093`
 - Edge proxy health: `http://localhost:18080/health`
 
+Harness metadata:
+- `AGENTS.md`
+- `ARCHITECTURE.md`
+- `CONTRIBUTING.md`
+
 Status / stop:
 
 ```bash
-./scripts/status-state-002-edge-proxy-generated.sh
-./scripts/stop-state-002-edge-proxy-generated.sh
+./scripts/status-state-003-agentic-harness-foundation-generated.sh
+./scripts/stop-state-003-agentic-harness-foundation-generated.sh
 ```
 
 ## Stable Entrypoints
