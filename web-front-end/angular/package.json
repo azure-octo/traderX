@@ -4,8 +4,8 @@
   "scripts": {
     "ng": "ng",
     "lint": "ng lint",
-    "start-dev": "ng serve --host 0.0.0.0 --disable-host-check --port ${WEB_SERVICE_PORT:-18093}",
-    "start": "ng build --base-href=. --configuration production --output-path=./dist --aot --output-hashing=all && node serve-angular-dist.js",
+    "start-prod": "ng serve --host 0.0.0.0 --disable-host-check --configuration=production --port ${WEB_SERVICE_PORT:-18093}",
+    "start": "ng serve --host 0.0.0.0 --disable-host-check --port ${WEB_SERVICE_PORT:-18093}",
     "build": "cross-env NG_CLI_ANALYTICS=ci ng build --base-href=. --configuration production --output-path=./dist --aot --output-hashing=all",
     "buildlocal": "cross-env NG_CLI_ANALYTICS=ci ng build --base-href=. --configuration local --output-path=./dist --aot --output-hashing=all",
     "test": "ng test --code-coverage --watch=true",
@@ -30,12 +30,6 @@
     "socket.io-client": "^4.8.3",
     "tslib": "^2.7.0",
     "zone.js": "^0.15.0"
-  },
-  "overrides": {
-    "postcss": "^8.5.13",
-    "serialize-javascript": "^7.0.5",
-    "tar": "^7.5.13",
-    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.20",
