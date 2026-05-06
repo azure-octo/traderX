@@ -13,7 +13,7 @@ You can find the coordinates of the codebase here. Their relationship is explain
 
 ### `database`
 
-* H2
+* PostgreSQL
 * [Source Code](../database)
 
 ### `people-service`

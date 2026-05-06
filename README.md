@@ -40,7 +40,7 @@ The project consists of multiple moving parts, and you can see how things hang t
 | *Component* | *Tech Stack* |*Description* |
 | :--- | :--- | :--- |
 | [docs](docs) | markdown | Architecture and Flow Diagrams are here! |
-| [database](database) | java/h2 | A simple self-contained SQL database |
+| [database](database) | java/PostgreSQL | A simple self-contained SQL database |
 | [reference-data](reference-data) | node/nestjs | REST service (off a flat file) for querying ticker symbols |
 | [trade-feed](trade-feed) | node/socketio | Message bus used for trade flows, as well as streaming to the GUI |
 | [people-service](people-service) | .Net core | Service for looking up users, for account mangement |
@@ -69,6 +69,7 @@ WebUI available at http://localhost:8080
 
 **Other run options:**
 - Docker Compose (easiest)
+- Kubernetes with [Radius](radius-traderx/README.md) (managed PostgreSQL via recipe)
 - Kubernetes with Tilt
 - Manual run (each service individually)
 - Corporate environments (custom artifact repos)

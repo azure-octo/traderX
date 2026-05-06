@@ -2,9 +2,6 @@ server {
         listen 8080;
         server_name ${NGINX_HOST};
 
-        location /db-web/ {
-            proxy_pass ${DATABASE_URL};
-        }
         location /reference-data/ {
             proxy_pass ${REFERENCE_DATA_URL};
         }

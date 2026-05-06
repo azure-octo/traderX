@@ -13,6 +13,8 @@ This page tracks major milestones, architectural changes, and notable releases f
 ### January 2026
 - **Docs restructure**: Reorganized and clarified the docs to improve onboarding for both humans and agents
 - **AI-friendly guidance**: Added `AGENTS.md` plus code review guidance to help agentic tools and contributors work consistently in this repo
+- **Database migration**: Replaced the embedded H2 database with PostgreSQL across all services (Docker Compose, Kubernetes, and manual run flows)
+- **Radius deployment**: Added a [Radius](https://radapp.io/) deployment option (`radius-traderx/`) including a Bicep app definition and Terraform/Bicep recipes that provision PostgreSQL on Kubernetes
 
 ## 2023
 

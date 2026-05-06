@@ -127,9 +127,7 @@ Run each service individually for maximum control.
 Export these port variables (or add to your shell profile):
 
 ```bash
-export DATABASE_TCP_PORT=18082
-export DATABASE_PG_PORT=18083
-export DATABASE_WEB_PORT=18084
+export DATABASE_PORT=5432
 export REFERENCE_DATA_SERVICE_PORT=18085
 export TRADE_FEED_PORT=18086
 export ACCOUNT_SERVICE_PORT=18088
