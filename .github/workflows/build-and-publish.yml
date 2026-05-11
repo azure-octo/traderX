@@ -9,7 +9,7 @@ on:
 
 env:
   VERSION: 'latest'
-  CONTAINER_REGISTRY: 'ghcr.io/azure-octo/traderx'
+  CONTAINER_REGISTRY: 'ghcr.io/azure-octo'
  
 jobs:
   build-ghcr:
