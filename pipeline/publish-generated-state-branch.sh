@@ -323,7 +323,7 @@ ensure_generated_root_branch() {
   git -C "${root_worktree}" checkout --orphan "${root_branch}" >/dev/null
   git -C "${root_worktree}" rm -rf . >/dev/null 2>&1 || true
   git -C "${root_worktree}" clean -fdx >/dev/null 2>&1 || true
-  git -C "${root_worktree}" commit --allow-empty -m "root: generated-state ancestry anchor" >/dev/null
+  git -C "${root_worktree}" commit --signoff --allow-empty -m "root: generated-state ancestry anchor" >/dev/null
   git -C "${ROOT}" worktree remove --force "${root_worktree}" >/dev/null 2>&1 || true
   echo "[ok] created generated root branch ${root_branch}"
 }
@@ -411,6 +411,13 @@ C2_COMPONENT_DIRS=(
 )
 
 snapshot_keep_paths_for_state() {
+  if (( 10#${state_num} >= 9 )); then
+    printf '%s\n' "conformance"
+  fi
+  # Workflows and deployment verification consume these generated helpers.
+  if (( 10#${state_num} >= 2 )); then
+    printf '%s\n' "ci"
+  fi
   case "${STATE_ID}" in
     001-baseline-uncontainerized-parity)
       if [[ "${SKIP_RUNTIME_PREFLIGHT}" == "1" ]]; then
@@ -517,6 +524,49 @@ prune_snapshot_for_state() {
 }
 
 prune_snapshot_for_state
+
+if (( 10#${state_num} >= 9 )); then
+  for required_conformance in run.py reference_adapter.py nonfunctional-requirements.md fresh-init.sql legacy-orderbook.sql; do
+    [[ -f "${SNAPSHOT_DIR}/conformance/state-009/${required_conformance}" ]] || {
+      echo "[fail] missing published state-009 conformance input: ${required_conformance}"
+      exit 1
+    }
+  done
+  mkdir -p "${SNAPSHOT_DIR}/scripts"
+  cp "${ROOT}/scripts/test-order-matcher-regression.sh" "${SNAPSHOT_DIR}/scripts/"
+fi
+
+# Local scanner reports are diagnostic artifacts, not snapshot runtime inputs.
+rm -rf "${SNAPSHOT_DIR}/ci/local-security-reports"
+if (( 10#${state_num} >= 2 )); then
+  for required_ci in state-metadata.json build-test-generated-snapshot.sh; do
+    [[ -f "${SNAPSHOT_DIR}/ci/${required_ci}" ]] || {
+      echo "[fail] missing published CI input: ci/${required_ci}"
+      exit 1
+    }
+  done
+fi
+if [[ -f "${SNAPSHOT_DIR}/.github/workflows/build-and-publish.yml" ]]; then
+  for required_ci in runtime_image_security.py dependency-version-targets.json; do
+    [[ -f "${SNAPSHOT_DIR}/ci/${required_ci}" ]] || {
+      echo "[fail] missing runtime security input: ci/${required_ci}"
+      exit 1
+    }
+  done
+  jq -e '.runtime.kind and .runtime.path' "${SNAPSHOT_DIR}/ci/state-metadata.json" >/dev/null || {
+    echo "[fail] missing active runtime security metadata"
+    exit 1
+  }
+fi
+
+if [[ -f "${SNAPSHOT_DIR}/.github/workflows/security.yml" ]] && grep -q 'nonpublishing_runtime_security.py' "${SNAPSHOT_DIR}/.github/workflows/security.yml"; then
+  for required_ci in nonpublishing_runtime_security.py runtime_image_security.py dependency-version-targets.json state-009-grafana-fixed-findings.json; do
+    [[ -f "${SNAPSHOT_DIR}/ci/${required_ci}" ]] || {
+      echo "[fail] missing build-only runtime scan input: ci/${required_ci}"
+      exit 1
+    }
+  done
+fi
 
 strip_precontainer_docker_artifacts() {
   if (( 10#${state_num} >= 4 )); then
@@ -1718,6 +1768,7 @@ prune_snapshot_scripts_for_targets() {
   }
 
   add_script_keep "README.runtime-harness.md"
+  add_script_keep "test-order-matcher-regression.sh"
   add_script_keep "lib/generated-state-detection.sh"
   add_script_keep "lib/generated-state-detection.ps1"
   add_script_keep "lib/resolve-socketio-client-path.sh"
@@ -3852,7 +3903,7 @@ if git -C "${WORKTREE_DIR}" diff --cached --quiet; then
     echo "[info] no snapshot changes to commit on ${BRANCH_NAME}"
   fi
 else
-  git -C "${WORKTREE_DIR}" commit \
+  git -C "${WORKTREE_DIR}" commit --signoff \
     -m "snapshot: ${STATE_ID} generated from ${SOURCE_COMMIT}" \
     -m "lineage-base: ${BASE_BRANCH}" >/dev/null
   echo "[ok] committed generated snapshot on branch ${BRANCH_NAME}"

@@ -9,7 +9,7 @@ import { PriceSnapshotService } from 'main/app/service/price-snapshot.service';
 
 type OrderRow = OrderRecord & {
   marketPrice?: number;
-  spreadToStrike?: number;
+  spreadToLimit?: number;
   accountDisplayName?: string;
 };
 
@@ -34,6 +34,7 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
 
   private readonly baseColumns: ColDef<OrderRow>[] = [
     { headerName: 'ORDER ID', field: 'orderId' },
+    { headerName: 'ORDER TYPE', field: 'orderType', width: 120 },
     { headerName: 'SECURITY', field: 'security' },
     { headerName: 'SIDE', field: 'side' },
     {
@@ -51,7 +52,7 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
       valueFormatter: ({ value }) => this.formatInteger(value)
     },
     {
-      headerName: 'STRIKE',
+      headerName: 'LIMIT PRICE',
       field: 'limitPrice',
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
@@ -67,7 +68,7 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
     },
     {
       headerName: 'DELTA',
-      field: 'spreadToStrike',
+      field: 'spreadToLimit',
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
       valueFormatter: ({ value }) => this.formatSignedCurrency(value),
@@ -277,12 +278,12 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
     const normalizedTicker = String(order.security || '').trim().toUpperCase();
     const marketPrice = this.marketPriceByTicker.get(normalizedTicker);
     const limitPrice = Number(order.limitPrice ?? 0);
-    const spreadToStrike = marketPrice == null ? undefined : Number(marketPrice) - limitPrice;
+    const spreadToLimit = marketPrice == null ? undefined : Number(marketPrice) - limitPrice;
     const accountDisplayName = this.accountNameById[order.accountId] ?? `#${order.accountId}`;
     return Object.assign({}, order, {
       security: normalizedTicker,
       marketPrice: marketPrice == null ? undefined : Number(marketPrice),
-      spreadToStrike,
+      spreadToLimit,
       accountDisplayName
     });
   }
@@ -355,11 +356,11 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
       return {};
     }
     const market = Number(data.marketPrice);
-    const strike = Number(data.limitPrice);
-    if (!Number.isFinite(market) || !Number.isFinite(strike)) {
+    const limit = Number(data.limitPrice);
+    if (!Number.isFinite(market) || !Number.isFinite(limit)) {
       return {};
     }
-    const favorable = data.side === 'Buy' ? market <= strike : market >= strike;
+    const favorable = data.side === 'Buy' ? market <= limit : market >= limit;
     return { color: favorable ? '#14532d' : '#991b1b', fontWeight: 700 };
   }
 

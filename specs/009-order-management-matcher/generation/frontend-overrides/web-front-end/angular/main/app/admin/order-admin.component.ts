@@ -8,7 +8,7 @@ import { PriceSnapshotService } from '../service/price-snapshot.service';
 
 type OrderRow = OrderRecord & {
     marketPrice?: number;
-    spreadToStrike?: number;
+    spreadToLimit?: number;
 };
 
 @Component({
@@ -32,6 +32,7 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
     columnDefs: ColDef<OrderRow>[] = [
         { headerName: 'ORDER ID', field: 'orderId' },
         { headerName: 'ACCOUNT', field: 'accountId' },
+        { headerName: 'ORDER TYPE', field: 'orderType', width: 120 },
         { headerName: 'SECURITY', field: 'security' },
         { headerName: 'SIDE', field: 'side' },
         {
@@ -49,7 +50,7 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
             valueFormatter: ({ value }) => this.formatInteger(value)
         },
         {
-            headerName: 'STRIKE',
+            headerName: 'LIMIT PRICE',
             field: 'limitPrice',
             headerClass: 'ag-right-aligned-header',
             cellClass: 'ag-right-aligned-cell',
@@ -65,7 +66,7 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
         },
         {
             headerName: 'DELTA',
-            field: 'spreadToStrike',
+            field: 'spreadToLimit',
             headerClass: 'ag-right-aligned-header',
             cellClass: 'ag-right-aligned-cell',
             valueFormatter: ({ value }) => this.formatSignedCurrency(value),
@@ -76,12 +77,16 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
         {
             headerName: 'CANCEL',
             colId: 'cancel',
-            cellRenderer: () => '<button class="btn btn-outline-danger btn-sm">Cancel</button>'
+            cellRenderer: (params: any) => ['NEW', 'PARTIALLY_FILLED'].includes(params?.data?.status)
+                ? '<button class="btn btn-outline-danger btn-sm">Cancel</button>'
+                : '-'
         },
         {
             headerName: 'FORCE FILL',
             colId: 'forceFill',
-            cellRenderer: () => '<button class="btn btn-outline-success btn-sm">Force Fill</button>'
+            cellRenderer: (params: any) => (['NEW', 'PARTIALLY_FILLED'].includes(params?.data?.status) && params?.data?.orderType !== 'MARKET')
+                ? '<button class="btn btn-outline-success btn-sm">Force Fill</button>'
+                : '-'
         }
     ];
 
@@ -115,10 +120,15 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
 
     onCellClicked(event: CellClickedEvent<OrderRow>): void {
         const orderId = event.data?.orderId;
-        if (!orderId) {
+        const status = event.data?.status;
+        const orderType = event.data?.orderType;
+        if (!orderId || !status) {
             return;
         }
         if (event.colDef.colId === 'cancel') {
+            if (!['NEW', 'PARTIALLY_FILLED'].includes(status)) {
+                return;
+            }
             this.orderAdminService.cancelOrder(orderId).subscribe({
                 next: (res) => {
                     this.actionMessage = { type: 'success', text: `Canceled ${res.orderId}` };
@@ -130,6 +140,9 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
             return;
         }
         if (event.colDef.colId === 'forceFill') {
+            if (!['NEW', 'PARTIALLY_FILLED'].includes(status) || orderType === 'MARKET') {
+                return;
+            }
             this.orderAdminService.forceFillOrder(orderId).subscribe({
                 next: (res) => {
                     this.actionMessage = { type: 'success', text: `Force-filled ${res.orderId}` };
@@ -261,12 +274,12 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
         const normalizedTicker = String(order.security || '').trim().toUpperCase();
         const limitPrice = Number(order.limitPrice ?? 0);
         const marketPrice = this.marketPriceByTicker.get(normalizedTicker);
-        const spreadToStrike = marketPrice == null ? undefined : Number(marketPrice) - limitPrice;
+        const spreadToLimit = marketPrice == null ? undefined : Number(marketPrice) - limitPrice;
         return Object.assign({}, order, {
             security: normalizedTicker,
             limitPrice,
             marketPrice: marketPrice == null ? undefined : Number(marketPrice),
-            spreadToStrike
+            spreadToLimit
         });
     }
 
@@ -313,11 +326,11 @@ export class OrderAdminComponent implements OnInit, OnDestroy {
             return {};
         }
         const market = Number(data.marketPrice);
-        const strike = Number(data.limitPrice);
-        if (!Number.isFinite(market) || !Number.isFinite(strike)) {
+        const limit = Number(data.limitPrice);
+        if (!Number.isFinite(market) || !Number.isFinite(limit)) {
             return {};
         }
-        const favorable = data.side === 'Buy' ? market <= strike : market >= strike;
+        const favorable = data.side === 'Buy' ? market <= limit : market >= limit;
         return { color: favorable ? '#14532d' : '#991b1b', fontWeight: 700 };
     }
 

@@ -27,6 +27,9 @@ if [[ "${state_specs_count}" -lt 3 ]]; then
   exit 1
 fi
 
+node --test "${ROOT}/pipeline/validate-learning-parity.test.mjs" "${ROOT}/pipeline/learning-contract.test.mjs"
+node "${ROOT}/pipeline/validate-learning-contract.mjs"
+node "${ROOT}/pipeline/validate-learning-parity.mjs"
 "${ROOT}/pipeline/validate-regeneration-readiness.sh"
 bash "${ROOT}/pipeline/validate-state-pack-artifacts.sh"
 bash "${ROOT}/pipeline/validate-lifecycle-script-contract.sh"
